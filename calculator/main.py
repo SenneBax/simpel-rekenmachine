@@ -1,7 +1,9 @@
 import tkinter as tk
 import math
+import cmath
 
 calculation = ""
+
 
 def addToCalculation(symbol):
     global calculation
@@ -9,58 +11,94 @@ def addToCalculation(symbol):
     text_result.delete(1.0, tk.END)
     text_result.insert(1.0, calculation)
 
+
 def evaluate():
     global calculation
     try:
-        # Als de berekening een faculteit bevat, verwerken we dat apart
+        # controleer op vectoriaal
         if '!' in calculation:
-            parts = calculation.split('!')
-            number = int(parts[0])  # Haal het getal voor de ! op
-            result = math.factorial(number)  # Bereken de faculteit
+            number_str = calculation[:-1]  # nummer voor de '!' opnemen
+            number = int(number_str)  # omzetten naar een integer
+            result = math.factorial(number)
             calculation = str(result)
+
+
+        #trigonometrische functies
+
+        elif 'cos' in calculation or 'sin' in calculation or 'tan' in calculation:
+            if 'cos' in calculation:
+                parts = calculation.split('cos')
+                number = float(parts[1])  # nummer na cos
+                result = cmath.cos(number)
+                calculation = str(result)
+            elif 'sin' in calculation:
+                parts = calculation.split('sin')
+                number = float(parts[1])  # nummer na sin
+                result = cmath.sin(number)
+                calculation = str(result)
+            elif 'tan' in calculation:
+                parts = calculation.split('tan')
+                number = float(parts[1])  # nummer na tan
+                result = cmath.tan(number)
+                calculation = str(result)
+
+        # Handle 'e' and 'π'
+        elif 'e' in calculation:
+            calculation = str(math.e)  #  'e' vervangen met math.e
+            result = str(eval(calculation))
+
+        elif 'π' in calculation:
+            calculation = str(math.pi)  # 'π' vervangen met math.pi
+            result = str(eval(calculation))
+
         else:
-            # Als er geen ! in de berekening zit, gebruik dan eval
-            result = str(eval(calculation))  # str erbij voor veiligheidsredenen
+            # gebruik eval voor de simppele berekeningen
+            result = str(eval(calculation))  # Safe eval
         calculation = ""
         text_result.delete(1.0, tk.END)
         text_result.insert(1.0, result)
-    except Exception as e:
-        # Foutmelding met een beetje meer info over de fout
+    except Exception as error:
+        # Handle any error gracefully
         clearField()
-        text_result.insert(1.0, f"Error: {str(e)}")
+        text_result.insert(1.0, f"Error: {str(error)}")
+
 
 def clearField():
     global calculation
     calculation = ""
     text_result.delete(1.0, tk.END)
 
+
 root = tk.Tk()
 root.title("Rekenmachine")
 
-# Achtergrondkleur en algemene stijl van het venster
+# Set background and general styling
 root.config(bg="#2E3B4E")
 
-# Textresultaat instellen
-text_result = tk.Text(root, height=2, width=20, font=("Helvetica", 32), bg="#1E2A37", fg="white", bd=5, relief="ridge", wrap="word")
+# Text result configuration
+text_result = tk.Text(root, height=2, width=20, font=("Helvetica", 32), bg="#1E2A37", fg="white", bd=5, relief="ridge",
+                      wrap="word")
 text_result.grid(columnspan=5, padx=20, pady=20)
 
-# Button stijl
+# Button style configuration
 button_style = {
     'width': 4,
     'height': 2,
     'font': ("Helvetica", 24),
-    'bg': "#62978f",  # kleur van de buttons
+    'bg': "#62978f",
     'fg': "white",
     'relief': "flat",
     'bd': 2,
-    'activebackground': "#FF7043",  # Lichte oranje bij klikken
+    'activebackground': "#FF7043",
     'activeforeground': "white"
 }
+
 
 def create_button(text, row, column, command):
     return tk.Button(root, text=text, command=command, **button_style).grid(row=row, column=column, padx=10, pady=10)
 
-# Knoppen
+
+# Buttons
 create_button("1", 2, 1, lambda: addToCalculation("1"))
 create_button("2", 2, 2, lambda: addToCalculation("2"))
 create_button("3", 2, 3, lambda: addToCalculation("3"))
@@ -77,14 +115,17 @@ create_button("+", 2, 4, lambda: addToCalculation("+"))
 create_button("*", 3, 4, lambda: addToCalculation("*"))
 create_button("/", 4, 4, lambda: addToCalculation("/"))
 create_button("-", 5, 4, lambda: addToCalculation("-"))
-create_button("=", 6, 1, lambda: evaluate())
-create_button("!", 6, 4, lambda: addToCalculation("!"))
-create_button("Clear", 6, 2, lambda: clearField())
+create_button("π", 6, 4, lambda: addToCalculation(str(math.pi)))
+create_button("Cos", 6, 1, lambda: addToCalculation("cos"))
+create_button("Sin", 6, 2, lambda: addToCalculation("sin"))
+create_button("Tan", 6, 3, lambda: addToCalculation("tan"))
+create_button("=", 7, 1, lambda: evaluate())
+create_button("!", 7, 4, lambda: addToCalculation("!"))
+create_button("e", 7, 3, lambda: addToCalculation("e"))
+create_button("Clear", 7, 2, lambda: clearField())
 
-create_button("π", 6, 3, lambda: addToCalculation(str(math.pi)))
-
-# Update de grootte van het venster automatisch op basis van de inhoud
+# Auto-update de grootte van de window om zich aan te passen aen de hoeveelhijd/grootte van de buttons
 root.update()
 
-# Root window loop
+# de main loop
 root.mainloop()
